@@ -13,7 +13,7 @@ Endpoints:
 
 import os
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -25,11 +25,16 @@ STATE = {"access_token": None}
 
 UPSTOX_BASE = "https://api.upstox.com/v2"
 NIFTY_KEY = "NSE_INDEX|Nifty 50"
+IST = timezone(timedelta(hours=5, minutes=30))
+
+
+def now_ist():
+    return datetime.now(IST)
 
 
 def get_nearest_tuesday():
     # NSE moved Nifty weekly expiry from Thursday to Tuesday effective Sept 2, 2025.
-    today = datetime.now()
+    today = now_ist()
     days_ahead = (1 - today.weekday()) % 7  # Tuesday = weekday 1
     if days_ahead == 0 and today.hour >= 15 and today.minute >= 30:
         days_ahead = 7
@@ -242,7 +247,7 @@ def live_data():
                 "bear_score": bear_score,
                 "layers": layers,
                 "strikes": strikes_sorted,
-                "timestamp": datetime.now().strftime("%H:%M:%S"),
+                "timestamp": now_ist().strftime("%H:%M:%S"),
             }
         )
 
